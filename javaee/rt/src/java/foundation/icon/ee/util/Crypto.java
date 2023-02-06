@@ -17,6 +17,7 @@
 package foundation.icon.ee.util;
 
 import foundation.icon.ee.util.bls12381.BLS12381;
+import foundation.icon.ee.util.bn256.*;
 import foundation.icon.ee.util.xxhash.XxHash;
 import i.RuntimeAssertionError;
 import org.bouncycastle.asn1.x9.X9ECParameters;
@@ -37,6 +38,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class Crypto {
+    public static final int BN256_PAIR_SIZE = 192;
+
     public static byte[] sha3_256(byte[] msg) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA3-256");
@@ -211,5 +214,119 @@ public class Crypto {
         if (!expression) {
             throw new IllegalArgumentException(message);
         }
+    }
+
+    public static class ByteUtil {
+        public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
+        public static final byte[] ZERO_BYTE_ARRAY = new byte[]{0};
+    
+        public static int firstNonZeroByte(byte[] data) {
+            for (int i = 0; i < data.length; ++i) {
+                if (data[i] != 0) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+    
+        public static byte[] stripLeadingZeroes(byte[] data) {
+    
+            if (data == null)
+                return null;
+    
+            final int firstNonZero = firstNonZeroByte(data);
+            switch (firstNonZero) {
+                case -1:
+                    return ZERO_BYTE_ARRAY;
+    
+                case 0:
+                    return data;
+    
+                default:
+                    byte[] result = new byte[data.length - firstNonZero];
+                    System.arraycopy(data, firstNonZero, result, 0, data.length - firstNonZero);
+    
+                    return result;
+            }
+        }
+
+        private static byte[] encodeInto64Bytes(byte[] w1, byte[] w2) {
+            byte[] res = new byte[64];
+    
+            w1 = stripLeadingZeroes(w1);
+            w2 = stripLeadingZeroes(w2);
+    
+            System.arraycopy(w1, 0, res, 32 - w1.length, w1.length);
+            System.arraycopy(w2, 0, res, 64 - w2.length, w2.length);
+    
+            return res;
+        }
+    }
+
+    public static byte[] bn256Add(byte[] data) {
+        if (data.length != 32 * 4)
+            throw new IllegalArgumentException("bn256Add: insufficient input data");
+
+        BN128<Fp> p_a = BN128Fp.create(
+            Arrays.copyOfRange(data, 0, 32), Arrays.copyOfRange(data, 32, 64));
+        if (p_a == null)
+            throw new IllegalArgumentException("bn256Add: invalid G1 point A");
+            
+        BN128<Fp> p_b = BN128Fp.create(
+            Arrays.copyOfRange(data, 64, 96), Arrays.copyOfRange(data, 96, 128));
+        if (p_b == null)
+            throw new IllegalArgumentException("bn256Add: invalid G1 point B");
+        
+        BN128<Fp> res = p_a.add(p_b).toEthNotation();
+        
+        return ByteUtil.encodeInto64Bytes(res.x().bytes(), res.y().bytes());
+    }
+
+    public static byte[] bn256Mul(byte[] data) {
+        if (data.length != 32 * 3)
+            throw new IllegalArgumentException("bn256Mul: insufficient input data");
+
+        BN128<Fp> p = BN128Fp.create(
+            Arrays.copyOfRange(data, 0, 32), Arrays.copyOfRange(data, 32, 64));
+            
+        if (p == null)
+            throw new IllegalArgumentException("bn256Add: invalid G1 point P");
+        
+        BigInteger scalar = new BigInteger(Arrays.copyOfRange(data, 64, 96));
+
+        BN128<Fp> res = p.mul(scalar).toEthNotation();
+
+        return ByteUtil.encodeInto64Bytes(res.x().bytes(), res.y().bytes());
+    }
+
+    public static byte[] bn256Pairing(byte[] data) {
+        int num_pairs = data.length / BN256_PAIR_SIZE;
+
+        if (data.length % BN256_PAIR_SIZE > 0) {
+            throw new IllegalArgumentException("bn256Pairing: invalid input data layout");
+        }
+
+        PairingCheck check = PairingCheck.create();
+    
+        // iterating over all pairs
+        for (int i = 0; i < num_pairs; i++) {
+            int offset = i * BN256_PAIR_SIZE;
+
+            BN128G1 p1 = BN128G1.create(Arrays.copyOfRange(data, offset, offset+32), Arrays.copyOfRange(data, offset+32, offset+32*2));
+            if (p1 == null)
+                throw new IllegalArgumentException("bn256Pairing: invalid G1 point: " + i);
+            
+            BN128G2 p2 = BN128G2.create(
+                Arrays.copyOfRange(data, offset+32*2, offset+32*3), Arrays.copyOfRange(data, offset+32*3, offset+32*4), 
+                Arrays.copyOfRange(data, offset+32*4, offset+32*5), Arrays.copyOfRange(data, offset+32*5, offset+32*6));
+            if (p2 == null)
+                throw new IllegalArgumentException("bn256Pairing: invalid G2 point: " + i);
+    
+            check.addPair(p1, p2);
+        }
+
+        check.run();
+
+        return check.result() > 0 ? new byte[]{1} : new byte[]{1};
     }
 }

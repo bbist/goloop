@@ -27,6 +27,7 @@ import i.IObject;
 import i.IObjectArray;
 import i.IRuntimeSetup;
 import i.InstrumentationHelpers;
+import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.StorageFees;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.parallel.TransactionTask;
@@ -334,6 +335,24 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         Objects.requireNonNull(data, "Input data can't be NULL");
         return new ByteArray(Crypto.hash(alg.getUnderlying(),
                 data.getUnderlying()));
+    }
+
+    @Override
+    public ByteArray avm_bn256(s.java.lang.String op, ByteArray data) {
+        String operation = op.getUnderlying();
+        byte[] rawData = data.getUnderlying();
+        switch (operation) {
+            case "add":
+                IInstrumentation.charge(RuntimeMethodFeeSchedule.RT_METHOD_FEE_LEVEL_4);
+                return new ByteArray(Crypto.bn256Add(rawData));
+            case "mul":
+                IInstrumentation.charge(RuntimeMethodFeeSchedule.RT_METHOD_FEE_LEVEL_4 * 80);
+                return new ByteArray(Crypto.bn256Mul(rawData));
+            case "pairing": 
+                IInstrumentation.charge(RuntimeMethodFeeSchedule.RT_METHOD_FEE_LEVEL_4 * (100 + 80 * (rawData.length / Crypto.BN256_PAIR_SIZE)));
+                return new ByteArray(Crypto.bn256Pairing(rawData));
+        }
+        throw new IllegalArgumentException("Unsupported operation: " + op);
     }
 
     @Override
