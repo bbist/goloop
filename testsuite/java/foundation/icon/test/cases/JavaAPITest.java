@@ -43,6 +43,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import testcases.APITest;
 import testcases.BLSTestScore;
+import testcases.BN256TestScore;
 import testcases.DeployScore;
 import testcases.HelloWorld;
 
@@ -547,6 +548,19 @@ class JavaAPITest extends TestBase {
     public void testAPIForBLS() throws Exception {
         LOG.infoEntering("deploy", "blsTestScore");
         Score blsScore = txHandler.deploy(ownerWallet, BLSTestScore.class, null);
+        LOG.info("scoreAddr = " + blsScore.getAddress());
+        LOG.infoExiting();
+
+        LOG.infoEntering("invoke", "test");
+        var tr = blsScore.invokeAndWaitResult(caller, "test", null);
+        assertSuccess(tr);
+        LOG.infoExiting();
+    }
+
+    @Test
+    public void testAPIForBN256() throws Exception {
+        LOG.infoEntering("deploy", "BN256TestScore");
+        Score blsScore = txHandler.deploy(ownerWallet, BN256TestScore.class, null);
         LOG.info("scoreAddr = " + blsScore.getAddress());
         LOG.infoExiting();
 
