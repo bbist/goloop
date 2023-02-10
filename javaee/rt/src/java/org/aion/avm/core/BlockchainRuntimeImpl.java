@@ -37,6 +37,7 @@ import p.score.AnyDB;
 import pi.AnyDBImpl;
 import pi.ObjectReaderImpl;
 import pi.ObjectWriterImpl;
+import java.io.Serializable;
 import score.RevertedException;
 import score.UserRevertedException;
 
@@ -338,21 +339,47 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public ByteArray avm_bn256(s.java.lang.String op, ByteArray data) {
-        String operation = op.getUnderlying();
-        byte[] rawData = data.getUnderlying();
-        switch (operation) {
+    public ByteArray avm_bn256(s.java.lang.String operation, ByteArray input) {
+        Objects.requireNonNull(operation, "Operation cannot be NULL");
+        Objects.requireNonNull(input, "Input cannot be NULL");
+
+        final int BN256_PAIR_SIZE = 192;
+
+        String op = operation.getUnderlying();
+        byte[] rawInput = input.getUnderlying();
+
+        Map<String, Serializable> dataObj;
+
+        switch (op) {
             case "add":
                 IInstrumentation.charge(RuntimeMethodFeeSchedule.RT_METHOD_FEE_LEVEL_4);
-                return new ByteArray(Crypto.bn256Add(rawData));
+                dataObj = Map.of("method", "bn256", "params", new Object[]{ "add", rawInput });
+                break;
             case "mul":
                 IInstrumentation.charge(RuntimeMethodFeeSchedule.RT_METHOD_FEE_LEVEL_4 * 80);
-                return new ByteArray(Crypto.bn256Mul(rawData));
+                dataObj = Map.of("method", "bn256", "params", new Object[]{ "mul", rawInput });
+                break;
             case "pairing": 
-                IInstrumentation.charge(RuntimeMethodFeeSchedule.RT_METHOD_FEE_LEVEL_4 * (100 + 80 * (rawData.length / Crypto.BN256_PAIR_SIZE)));
-                return new ByteArray(Crypto.bn256Pairing(rawData));
+                IInstrumentation.charge(RuntimeMethodFeeSchedule.RT_METHOD_FEE_LEVEL_4 * (100 + 80 * (rawInput.length / BN256_PAIR_SIZE)));
+                dataObj = Map.of("method", "bn256", "params", new Object[]{ "pairing", rawInput });
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported operation: " + op);
         }
-        throw new IllegalArgumentException("Unsupported operation: " + op);
+
+        // make cx000...000
+        byte[] rawAddr = new byte[Address.LENGTH];
+        rawAddr[0] = 0x1;
+        p.score.Address chainScoreAddress = new p.score.Address(rawAddr);
+             
+        
+        return (ByteArray) messageCall(
+            IInstrumentation.attachedThreadInstrumentation.get().wrapAsClass(ByteArray.class),
+            s.java.math.BigInteger.avm_ZERO,
+            chainScoreAddress,
+            "call",
+            dataObj
+        );
     }
 
     @Override

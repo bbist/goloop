@@ -167,9 +167,9 @@ public final class Context extends Object {
         return blockchainRuntime.avm_hash(alg, data);
     }
 
-    public static ByteArray avm_bn256(String op, ByteArray data) {
+    public static ByteArray avm_bn256(String operation, ByteArray input) {
         // Charge steps in blockchainRuntime
-        return blockchainRuntime.avm_bn256(op, data);
+        return blockchainRuntime.avm_bn256(operation, input);
     }
 
     public static boolean avm_verifySignature(String alg, ByteArray msg,

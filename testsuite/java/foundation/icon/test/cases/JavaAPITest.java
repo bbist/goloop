@@ -559,7 +559,7 @@ class JavaAPITest extends TestBase {
 
     @Test
     public void testAPIForBN256() throws Exception {
-        LOG.infoEntering("deploy", "BN256TestScore");
+        LOG.infoEntering("deploy", "bn256TestScore");
         Score blsScore = txHandler.deploy(ownerWallet, BN256TestScore.class, null);
         LOG.info("scoreAddr = " + blsScore.getAddress());
         LOG.infoExiting();

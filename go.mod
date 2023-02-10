@@ -5,9 +5,10 @@ require (
 	github.com/biter777/countries v1.3.4
 	github.com/bshuster-repo/logrus-logstash-hook v0.4.1
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0
+	github.com/ethereum/go-ethereum v1.10.26
 	github.com/evalphobia/logrus_fluent v0.5.4
 	github.com/gofrs/uuid v3.2.0+incompatible
-	github.com/gorilla/websocket v1.4.1
+	github.com/gorilla/websocket v1.4.2
 	github.com/gosuri/uitable v0.0.0-20160404203958-36ee7e946282
 	github.com/jroimartin/gocui v0.4.0
 	github.com/labstack/echo/v4 v4.9.0
@@ -18,7 +19,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.14.0
 	github.com/stretchr/testify v1.8.1
-	github.com/syndtr/goleveldb v1.0.0
+	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	github.com/vmihailenco/msgpack/v4 v4.3.11
 	go.opencensus.io v0.23.0
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
@@ -39,7 +40,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
+	github.com/golang/snappy v0.0.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
@@ -48,7 +49,7 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/mattn/go-runewidth v0.0.4 // indirect
+	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/nsf/termbox-go v0.0.0-20190325093121-288510b9734e // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect

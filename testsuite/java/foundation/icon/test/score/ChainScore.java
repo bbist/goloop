@@ -144,4 +144,13 @@ public class ChainScore extends Score {
                 .build();
         return invokeAndWaitResult(wallet, "sendBTPMessage", params, null, Constants.DEFAULT_STEPS);
     }
+
+    public byte[] bn256(String operation, byte[] input) throws Exception {
+        RpcObject params = new RpcObject.Builder()
+            .put("operation", new RpcValue(operation))
+            .put("input", new RpcValue(input))
+            .build();
+        RpcItem ret = call("bn256", params);
+        return ret == null ? null : ret.asByteArray();
+    }
 }
