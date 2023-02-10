@@ -346,7 +346,7 @@ public final class Context {
     }
 
     /**
-     * Returns elliptic curve point multiplication on altBN128 curve
+     * Returns elliptic curve point multiplication on bn256 curve
      * @param op is an operation to apply to the data. Possible values are:
      *              add, mul, pairing
      * For add operation, the data should have following layout
@@ -374,7 +374,7 @@ public final class Context {
      *      0-1: a single byte with value `0` for failure and `1` for success.
      * @throws IllegalArgumentException specified point coordinates are invalid
      */
-    public static byte[] bn256(String op, byte[] data) {
+    public static byte[] bn256(String operation, byte[] input) {
         return null;
     }
 
